@@ -400,16 +400,24 @@ async function doLogin(){
   if(!email||!email.includes('@')){showErr('Please enter a valid email address.');return}
 
   if(email===ADMIN_EMAIL.toLowerCase()){
-    const pw=prompt('Enter admin password:');
-    if(pw===ADMIN_PASS){
-      adminPassSession=pw;
-      currentEmail=email;
-      currentName='Admin';
-      showLoading('Loading admin panel...');
-      await renderAdmin();
-      hideLoading();
-      show('admin');
-    } else showErr('Incorrect password.');
+    // Show inline admin password field
+    const existingAdminField = document.getElementById('admin-pw-field');
+    if(!existingAdminField){
+      const pwDiv = document.createElement('div');
+      pwDiv.id = 'admin-pw-field';
+      pwDiv.className = 'field';
+      pwDiv.innerHTML = '<label>Admin password</label><input type="password" id="admin-pw-input" placeholder="Enter admin password" onkeydown="if(event.key===\'Enter\')submitAdminPw()">';
+      const btn = document.getElementById('login-error').parentNode;
+      btn.insertBefore(pwDiv, document.getElementById('login-error').nextSibling);
+      const submitBtn = document.createElement('button');
+      submitBtn.className = 'btn btn-dark';
+      submitBtn.style = 'width:100%;margin-top:8px';
+      submitBtn.textContent = 'Enter Admin Panel';
+      submitBtn.onclick = submitAdminPw;
+      submitBtn.id = 'admin-submit-btn';
+      pwDiv.after(submitBtn);
+    }
+    document.getElementById('admin-pw-input').focus();
     return;
   }
 
@@ -449,6 +457,26 @@ async function doLogin(){
   }
 
   function showErr(m){err.textContent=m;err.style.display='block'}
+}
+
+async function submitAdminPw(){
+  const pw = document.getElementById('admin-pw-input').value;
+  const err = document.getElementById('login-error');
+  if(pw===ADMIN_PASS){
+    adminPassSession=pw;
+    currentEmail=ADMIN_EMAIL.toLowerCase();
+    currentName='Admin';
+    // Clean up admin fields
+    const f=document.getElementById('admin-pw-field');if(f)f.remove();
+    const b=document.getElementById('admin-submit-btn');if(b)b.remove();
+    showLoading('Loading admin panel...');
+    await renderAdmin();
+    hideLoading();
+    show('admin');
+  } else {
+    err.textContent='Incorrect password.';
+    err.style.display='block';
+  }
 }
 
 function doLogout(){
