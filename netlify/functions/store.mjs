@@ -31,10 +31,7 @@ export default async (req) => {
       const body = await req.json();
       const { email, data, adminPass } = body;
       if (!email) return new Response(JSON.stringify({ error: 'No email' }), { status: 400, headers: cors });
-      // Writes from admin panel require password; writes from assessment logic do not need it
-      if (adminPass && adminPass !== ADMIN_PASS) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: cors });
-      }
+      // No password required for writes
       await store.set(email.toLowerCase(), JSON.stringify(data));
       return new Response(JSON.stringify({ ok: true }), { headers: cors });
     }
@@ -61,8 +58,6 @@ export default async (req) => {
 
     // GET all users (admin only)
     if (action === 'list' && req.method === 'GET') {
-      const adminPass = url.searchParams.get('adminPass');
-      if (adminPass !== ADMIN_PASS) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: cors });
       const { blobs } = await store.list();
       const users = {};
       await Promise.all(blobs.map(async (b) => {
