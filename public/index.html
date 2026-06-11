@@ -322,7 +322,7 @@ tr:hover td{background:#fdf9f6}
 
 <script>
 const ADMIN_EMAIL = 'facilitators@huunuu.com';
-const ADMIN_PASS  = 'a';
+const ADMIN_PASS  = 'ADMIN_PASSWORD140890';
 const PASS_MARK   = 45;
 const MAX_ATTEMPTS = 3;
 
@@ -400,24 +400,13 @@ async function doLogin(){
   if(!email||!email.includes('@')){showErr('Please enter a valid email address.');return}
 
   if(email===ADMIN_EMAIL.toLowerCase()){
-    // Show inline admin password field
-    const existingAdminField = document.getElementById('admin-pw-field');
-    if(!existingAdminField){
-      const pwDiv = document.createElement('div');
-      pwDiv.id = 'admin-pw-field';
-      pwDiv.className = 'field';
-      pwDiv.innerHTML = '<label>Admin password</label><input type="password" id="admin-pw-input" placeholder="Enter admin password" onkeydown="if(event.key===\'Enter\')submitAdminPw()">';
-      const btn = document.getElementById('login-error').parentNode;
-      btn.insertBefore(pwDiv, document.getElementById('login-error').nextSibling);
-      const submitBtn = document.createElement('button');
-      submitBtn.className = 'btn btn-dark';
-      submitBtn.style = 'width:100%;margin-top:8px';
-      submitBtn.textContent = 'Enter Admin Panel';
-      submitBtn.onclick = submitAdminPw;
-      submitBtn.id = 'admin-submit-btn';
-      pwDiv.after(submitBtn);
-    }
-    document.getElementById('admin-pw-input').focus();
+    adminPassSession='open';
+    currentEmail=email;
+    currentName='Admin';
+    showLoading('Loading admin panel...');
+    await renderAdmin();
+    hideLoading();
+    show('admin');
     return;
   }
 
