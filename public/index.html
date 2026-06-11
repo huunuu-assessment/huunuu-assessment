@@ -123,36 +123,9 @@ body{font-family:'Trebuchet MS',Arial,sans-serif;background:#fdf9f6;color:#44363
 .cert-date-label{font-size:10px;color:#aa96a1;margin-bottom:3px}
 .cert-date-val{font-family:'Dancing Script',cursive;font-size:17px;color:#44363c}
 .cert-actions{display:flex;gap:12px;justify-content:center}
-.admin-body{max-width:880px;margin:0 auto;padding:36px 32px}
-.admin-body h1{font-size:24px;font-weight:700;margin-bottom:4px}
-.admin-sub{font-size:13px;color:#aa96a1;margin-bottom:28px}
-.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
-.admin-card{background:#fff;border-radius:12px;padding:22px 24px}
-.admin-card h3{font-size:14px;font-weight:700;margin-bottom:14px}
-.admin-card p{font-size:12px;color:#aa96a1;margin-bottom:10px}
-.inline-form{display:flex;gap:8px}
-.inline-form input{flex:1;padding:9px 12px;border:1.5px solid #e8e5e7;border-radius:8px;font-family:inherit;font-size:13px;outline:none}
-.inline-form input:focus{border-color:#d71c5c}
-.form-msg{font-size:11px;color:#d71c5c;margin-top:6px;min-height:16px}
-.admin-table-wrap{background:#fff;border-radius:12px;padding:22px 24px;overflow-x:auto}
-.admin-table-wrap h3{font-size:14px;font-weight:700;margin-bottom:14px}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:#44363c;color:#fff;padding:9px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em}
-th:first-child{border-radius:6px 0 0 0}
-th:last-child{border-radius:0 6px 0 0}
-td{padding:9px 10px;border-bottom:1px solid #e8e5e7;color:#44363c}
-tr:hover td{background:#fdf9f6}
-.status{display:inline-block;padding:2px 8px;border-radius:50px;font-size:10px;font-weight:700;text-transform:uppercase}
-.s-approved{background:#e8f5e9;color:#2e7d32}
-.s-pending{background:#fff8e1;color:#f57f17}
-.s-locked{background:#fde8ef;color:#c62828}
-.s-passed{background:#e8f5e9;color:#2e7d32}
-.toast{position:fixed;bottom:28px;right:28px;background:#44363c;color:#fff;padding:12px 20px;border-radius:9px;font-size:13px;opacity:0;transform:translateY(60px);transition:all .3s;z-index:999;pointer-events:none}
-.toast.show{opacity:1;transform:translateY(0)}
 @media(max-width:600px){
-  .admin-grid{grid-template-columns:1fr}
   .welcome-center,.steps{padding-left:20px;padding-right:20px}
-  .assessment-body,.admin-body,.results-body{padding-left:16px;padding-right:16px}
+  .assessment-body,.results-body{padding-left:16px;padding-right:16px}
   .login-wrap{padding:20px}
 }
 @media print{
@@ -166,7 +139,19 @@ tr:hover td{background:#fdf9f6}
 </head>
 <body>
 
-<div class="toast" id="toast"></div>
+<!-- Hidden Netlify Form for result capture -->
+<form name="assessment-result" netlify netlify-honeypot="bot-field" hidden>
+  <input type="hidden" name="form-name" value="assessment-result">
+  <input type="text" name="bot-field">
+  <input type="text" name="name">
+  <input type="email" name="email">
+  <input type="text" name="score">
+  <input type="text" name="passed">
+  <input type="text" name="date">
+  <input type="text" name="time_taken">
+  <input type="text" name="attempt">
+</form>
+
 <div class="loading-overlay" id="loading-overlay" style="display:none">
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loading-text">Please wait...</div>
@@ -176,7 +161,7 @@ tr:hover td{background:#fdf9f6}
   <span class="logo-text-sm">huunuu</span>
   <div class="header-right">
     <span id="header-name"></span>
-    <button class="btn btn-outline btn-sm" id="logout-btn" onclick="doLogout()" style="display:none">Log out</button>
+    <button class="btn btn-outline btn-sm" onclick="doLogout()" style="display:none" id="logout-btn">Log out</button>
   </div>
 </div>
 
@@ -201,7 +186,7 @@ tr:hover td{background:#fdf9f6}
     <div class="step"><div class="step-num">5</div><div><h3>Your certificate</h3><p>Once you pass, a Certificate of Accreditation will be generated for you to download. For a printed copy posted to you, email <a href="mailto:facilitators@huunuu.com" style="color:#d71c5c">facilitators@huunuu.com</a> with your postage details.</p></div></div>
   </div>
   <div class="welcome-footer">
-    <button class="btn btn-pink" style="font-size:17px;padding:15px 44px" onclick="goToLogin()">Begin Assessment</button>
+    <button class="btn btn-pink" style="font-size:17px;padding:15px 44px" onclick="show('login')">Begin Assessment</button>
     <p>You will need the email address used to purchase the Big Conversation Framework.</p>
   </div>
 </div>
@@ -287,195 +272,107 @@ tr:hover td{background:#fdf9f6}
   </div>
 </div>
 
-<!-- ADMIN -->
-<div class="screen" id="screen-admin">
-  <div class="admin-body">
-    <h1>huunuu Admin</h1>
-    <p class="admin-sub">Manage approved facilitators and assessment results.</p>
-    <div class="admin-grid">
-      <div class="admin-card">
-        <h3>Add Approved Email</h3>
-        <p>Add a purchaser email to grant access to the assessment.</p>
-        <div class="inline-form">
-          <input type="email" id="add-email" placeholder="email@example.com">
-          <button class="btn btn-pink btn-sm" onclick="adminAdd()">Add</button>
-        </div>
-        <div class="form-msg" id="add-msg"></div>
-      </div>
-      <div class="admin-card">
-        <h3>Reset Attempts</h3>
-        <p>Reset a participant's attempt count back to zero.</p>
-        <div class="inline-form">
-          <input type="email" id="reset-email" placeholder="email@example.com">
-          <button class="btn btn-dark btn-sm" onclick="adminReset()">Reset</button>
-        </div>
-        <div class="form-msg" id="reset-msg"></div>
-      </div>
-    </div>
-    <div class="admin-table-wrap">
-      <h3>All Users</h3>
-      <table><thead><tr><th>Email</th><th>Name</th><th>Status</th><th>Attempts</th><th>Score</th><th>Time</th><th>Missed</th><th>Actions</th></tr></thead>
-      <tbody id="admin-tbody"></tbody></table>
-    </div>
-  </div>
-</div>
-
 <script>
-const ADMIN_EMAIL = 'facilitators@huunuu.com';
-const ADMIN_PASS  = 'ADMIN_PASSWORD140890';
-const PASS_MARK   = 45;
+// ── APPROVED EMAILS ──
+// To add or remove someone, edit this list and commit to GitHub
+const APPROVED_EMAILS = [
+  'cherry@huunuu.com',
+  'cherryannewilliams@hotmail.com',
+  'steve@huunuu.com',
+  'connor@1801.ai',
+  'steve.turner@dataintellect.com',
+  'pwmcconkey@gmail.com',
+  'clare@huunuu.com'
+];
+
+const PASS_MARK = 45;
 const MAX_ATTEMPTS = 3;
+const STORAGE_KEY = 'huunuu_bfc_';
 
-let adminPassSession = null;
+let currentEmail = null;
+let currentName = null;
 
-function showLoading(msg='Please wait...'){
-  document.getElementById('loading-text').textContent=msg;
-  document.getElementById('loading-overlay').style.display='flex';
+function showLoading(msg){
+  document.getElementById('loading-text').textContent = msg||'Please wait...';
+  document.getElementById('loading-overlay').style.display = 'flex';
 }
 function hideLoading(){
-  document.getElementById('loading-overlay').style.display='none';
+  document.getElementById('loading-overlay').style.display = 'none';
 }
-
-// Storage via Netlify function
-async function getRecord(email){
-  const res = await fetch('/api/store?action=get&email='+encodeURIComponent(email));
-  const data = await res.json();
-  if(!data.exists) return null;
-  return data.data;
-}
-
-async function saveRecord(email, record){
-  const res = await fetch('/api/store?action=set', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ email, data: record })
-  });
-  return res.ok;
-}
-
-async function getAllRecords(){
-  const res = await fetch('/api/store?action=list&adminPass='+encodeURIComponent(adminPassSession));
-  if(!res.ok) return {};
-  return res.json();
-}
-
-async function adminAddEmail(email){
-  const res = await fetch('/api/store?action=add', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ email, adminPass: adminPassSession })
-  });
-  return res.json();
-}
-
-async function adminDeleteEmail(email){
-  const res = await fetch('/api/store?action=delete', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ email, adminPass: adminPassSession })
-  });
-  return res.json();
-}
-
-// Screen switching
-let currentEmail=null, currentName=null;
 
 function show(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
-  const hdr=document.getElementById('main-header');
-  hdr.style.display=(name==='welcome'||name==='login')?'none':'flex';
+  const hdr = document.getElementById('main-header');
+  hdr.style.display = (name==='welcome'||name==='login') ? 'none' : 'flex';
   window.scrollTo(0,0);
 }
 
-function goToLogin(){show('login');}
+// LocalStorage helpers for attempt tracking
+function getRecord(email){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY + email.toLowerCase());
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
 
-async function doLogin(){
-  const name=document.getElementById('login-name').value.trim();
-  const email=document.getElementById('login-email').value.trim().toLowerCase();
-  const err=document.getElementById('login-error');
-  err.style.display='none';
+function saveRecord(email, data){
+  try{
+    localStorage.setItem(STORAGE_KEY + email.toLowerCase(), JSON.stringify(data));
+  }catch(e){}
+}
 
-  if(!name){showErr('Please enter your full name.');return}
-  if(!email||!email.includes('@')){showErr('Please enter a valid email address.');return}
+function doLogin(){
+  const name = document.getElementById('login-name').value.trim();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const err = document.getElementById('login-error');
+  err.style.display = 'none';
 
-  if(email===ADMIN_EMAIL.toLowerCase()){
-    adminPassSession='open';
-    currentEmail=email;
-    currentName='Admin';
-    showLoading('Loading admin panel...');
-    await renderAdmin();
-    hideLoading();
-    show('admin');
+  if(!name){ showErr('Please enter your full name.'); return; }
+  if(!email||!email.includes('@')){ showErr('Please enter a valid email address.'); return; }
+
+  if(!APPROVED_EMAILS.includes(email)){
+    showErr('This email is not registered. Please use the email you used to purchase the Big Conversation Framework, or contact facilitators@huunuu.com.');
     return;
   }
 
-  showLoading('Checking your access...');
-  try{
-    const user=await getRecord(email);
-    if(!user){
-      hideLoading();
-      showErr('This email is not registered. Please use the email you used to purchase the Big Conversation Framework, or contact facilitators@huunuu.com.');
-      return;
-    }
-    if(user.attempts>=MAX_ATTEMPTS && !user.passed){
-      hideLoading();
-      showErr('You have used all 3 attempts. Please contact facilitators@huunuu.com to request a reset.');
-      return;
-    }
-    currentEmail=email;
-    currentName=name;
-    if(!user.name||user.name!==name){
-      user.name=name;
-      await saveRecord(email,user);
-    }
-    document.getElementById('header-name').textContent=name;
-    document.getElementById('logout-btn').style.display='inline-block';
-    hideLoading();
-    if(user.passed){
-      document.getElementById('cert-name').textContent=name;
-      document.getElementById('cert-date').textContent=user.passDate||new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-      show('certificate');
-    } else {
-      buildAssessment();
-      show('assessment');
-    }
-  }catch(e){
-    hideLoading();
-    showErr('Something went wrong. Please try again or contact facilitators@huunuu.com.');
+  const record = getRecord(email) || { attempts: 0 };
+
+  if(record.attempts >= MAX_ATTEMPTS && !record.passed){
+    showErr('You have used all 3 attempts. Please contact facilitators@huunuu.com to request a reset.');
+    return;
   }
 
-  function showErr(m){err.textContent=m;err.style.display='block'}
-}
+  currentEmail = email;
+  currentName = name;
+  document.getElementById('header-name').textContent = name;
+  document.getElementById('logout-btn').style.display = 'inline-block';
 
-async function submitAdminPw(){
-  const pw = document.getElementById('admin-pw-input').value;
-  const err = document.getElementById('login-error');
-  if(pw===ADMIN_PASS){
-    adminPassSession=pw;
-    currentEmail=ADMIN_EMAIL.toLowerCase();
-    currentName='Admin';
-    // Clean up admin fields
-    const f=document.getElementById('admin-pw-field');if(f)f.remove();
-    const b=document.getElementById('admin-submit-btn');if(b)b.remove();
-    showLoading('Loading admin panel...');
-    await renderAdmin();
-    hideLoading();
-    show('admin');
+  if(record.passed){
+    document.getElementById('cert-name').textContent = name;
+    document.getElementById('cert-date').textContent = record.passDate || today();
+    show('certificate');
   } else {
-    err.textContent='Incorrect password.';
-    err.style.display='block';
+    buildAssessment();
+    show('assessment');
   }
+
+  function showErr(m){ err.textContent=m; err.style.display='block'; }
 }
 
 function doLogout(){
-  currentEmail=null;currentName=null;adminPassSession=null;
-  document.getElementById('logout-btn').style.display='none';
-  document.getElementById('header-name').textContent='';
+  currentEmail = null;
+  currentName = null;
+  document.getElementById('logout-btn').style.display = 'none';
+  document.getElementById('header-name').textContent = '';
   show('welcome');
 }
 
-// Questions
+function today(){
+  return new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+}
+
+// ── QUESTIONS ──
 const modules=[
   {num:1,title:'The Role of the Facilitator',desc:'Questions covering your core responsibilities, the behaviours you should embody and the environment you are expected to create during a huunuu workshop.',questions:[
     {q:'What is the primary role of a huunuu facilitator?',tag:'ROLE',opts:['To ensure participants reach predetermined conclusions about life and legacy','To deliver a fixed set of content to each group','To promote huunuu products and services during sessions','To guide, support and encourage participants while creating an engaging and inclusive environment'],ans:3},
@@ -551,32 +448,32 @@ const modules=[
   ]},
 ];
 
-let allQ=[];
-modules.forEach((m,mi)=>m.questions.forEach((q)=>allQ.push({...q,modIdx:mi})));
-let answers={};
-let startTime=null;
+let allQ = [];
+modules.forEach((m,mi)=>m.questions.forEach(q=>allQ.push({...q,modIdx:mi})));
+let answers = {};
+let startTime = null;
 
 function buildAssessment(){
-  answers={};
-  startTime=Date.now();
-  const body=document.getElementById('assessment-body');
-  body.innerHTML='';
-  let gi=0;
-  modules.forEach((m)=>{
-    const mh=document.createElement('div');
-    mh.className='mod-header';
-    mh.innerHTML=`<div class="mod-num">Module ${m.num}</div><h2>${m.title}</h2><p>${m.desc}</p>`;
+  answers = {};
+  startTime = Date.now();
+  const body = document.getElementById('assessment-body');
+  body.innerHTML = '';
+  let gi = 0;
+  modules.forEach(m=>{
+    const mh = document.createElement('div');
+    mh.className = 'mod-header';
+    mh.innerHTML = `<div class="mod-num">Module ${m.num}</div><h2>${m.title}</h2><p>${m.desc}</p>`;
     body.appendChild(mh);
-    m.questions.forEach((q)=>{
-      const gIdx=gi++;
-      const card=document.createElement('div');
-      card.className='q-card';
-      card.id='qc-'+gIdx;
-      const letters=['A','B','C','D'];
-      card.innerHTML=`
+    m.questions.forEach(q=>{
+      const gIdx = gi++;
+      const card = document.createElement('div');
+      card.className = 'q-card';
+      card.id = 'qc-'+gIdx;
+      const letters = ['A','B','C','D'];
+      card.innerHTML = `
         <div class="q-meta"><span class="q-num">Q${gIdx+1}</span><span class="q-tag">${q.tag}</span></div>
         <div class="q-text">${q.q}</div>
-        <div class="options" id="opts-${gIdx}">
+        <div class="options">
           ${q.opts.map((o,oi)=>`<div class="opt" id="opt-${gIdx}-${oi}" onclick="pick(${gIdx},${oi})">
             <div class="opt-letter">${letters[oi]}</div>
             <div class="opt-text">${o}</div>
@@ -589,157 +486,114 @@ function buildAssessment(){
 }
 
 function pick(gi,oi){
-  for(let i=0;i<4;i++){const el=document.getElementById('opt-'+gi+'-'+i);if(el)el.classList.remove('selected')}
+  for(let i=0;i<4;i++){const el=document.getElementById('opt-'+gi+'-'+i);if(el)el.classList.remove('selected');}
   document.getElementById('opt-'+gi+'-'+oi).classList.add('selected');
-  answers[gi]=oi;
+  answers[gi] = oi;
   document.getElementById('qc-'+gi).classList.add('answered');
   updateProgress();
 }
 
 function updateProgress(){
-  const n=Object.keys(answers).length;
-  document.getElementById('prog-text').textContent=n+' of 60 answered';
-  document.getElementById('ans-count').textContent=n;
-  document.getElementById('prog-fill').style.width=(n/60*100)+'%';
+  const n = Object.keys(answers).length;
+  document.getElementById('prog-text').textContent = n+' of 60 answered';
+  document.getElementById('ans-count').textContent = n;
+  document.getElementById('prog-fill').style.width = (n/60*100)+'%';
 }
 
 async function submitAssessment(){
-  const n=Object.keys(answers).length;
-  if(n<60&&!confirm(`You have ${60-n} unanswered question${60-n===1?'':'s'}. Submit anyway? Unanswered questions will be marked incorrect.`))return;
+  const n = Object.keys(answers).length;
+  if(n<60 && !confirm(`You have ${60-n} unanswered question${60-n===1?'':'s'}. Submit anyway? Unanswered questions will be marked incorrect.`)) return;
+
   showLoading('Saving your results...');
-  const timeTaken=Date.now()-startTime;
-  const timeStr=Math.floor(timeTaken/60000)+'m '+Math.round((timeTaken%60000)/1000)+'s';
-  let score=0;
-  const wrong=[];
+
+  const timeTaken = Date.now() - startTime;
+  const timeStr = Math.floor(timeTaken/60000)+'m '+Math.round((timeTaken%60000)/1000)+'s';
+
+  let score = 0;
+  const wrong = [];
   allQ.forEach((q,gi)=>{
-    if(answers[gi]===q.ans){score++}
+    if(answers[gi]===q.ans){ score++; }
     else wrong.push({num:gi+1,q:q.q,yours:answers[gi]!==undefined?q.opts[answers[gi]]:'Not answered',correct:q.opts[q.ans],tag:q.tag,mod:modules[q.modIdx].title});
   });
-  const pct=Math.round(score/60*100);
-  const passed=score>=PASS_MARK;
-  try{
-    let user=await getRecord(currentEmail)||{attempts:0};
-    user.name=currentName;
-    user.attempts=(user.attempts||0)+1;
-    user.lastScore=score;
-    user.lastPct=pct;
-    user.lastTime=timeStr;
-    user.wrongCount=wrong.length;
-    if(passed){
-      user.passed=true;
-      user.passDate=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-    }
-    await saveRecord(currentEmail,user);
-  }catch(e){console.error('Save failed',e);}
+
+  const pct = Math.round(score/60*100);
+  const passed = score >= PASS_MARK;
+
+  // Update local record
+  const record = getRecord(currentEmail) || {attempts:0};
+  record.attempts = (record.attempts||0) + 1;
+  record.lastScore = score;
+  record.lastPct = pct;
+  if(passed){
+    record.passed = true;
+    record.passDate = today();
+  }
+  saveRecord(currentEmail, record);
+
+  // Submit to Netlify Form
+  try {
+    const formData = new FormData();
+    formData.append('form-name', 'assessment-result');
+    formData.append('name', currentName);
+    formData.append('email', currentEmail);
+    formData.append('score', pct+'% ('+score+'/60)');
+    formData.append('passed', passed ? 'YES' : 'NO');
+    formData.append('date', today());
+    formData.append('time_taken', timeStr);
+    formData.append('attempt', record.attempts+' of '+MAX_ATTEMPTS);
+    await fetch('/', { method:'POST', body: formData });
+  } catch(e){ console.log('Form submit error', e); }
+
   hideLoading();
-  showResults(score,pct,passed,wrong,timeStr);
+  showResults(score, pct, passed, wrong, timeStr, record.attempts);
 }
 
-async function showResults(score,pct,passed,wrong,timeStr){
-  document.getElementById('r-emoji').textContent=passed?'🎉':'📖';
-  document.getElementById('r-heading').textContent=passed?'Congratulations!':'Not quite there yet';
-  document.getElementById('r-score').textContent=pct+'%';
-  document.getElementById('r-label').textContent=score+' out of 60 correct. Pass mark is 75%. Time taken: '+timeStr;
-  let msg=passed
-    ?'<strong>You have passed the huunuu Licensed Facilitator Assessment.</strong><br><br>Your Certificate of Accreditation is ready to download below.'
-    :'You scored '+pct+'% against a pass mark of 75%. We recommend revisiting the Big Conversation Framework facilitator guide before trying again.';
+function showResults(score, pct, passed, wrong, timeStr, attempts){
+  document.getElementById('r-emoji').textContent = passed ? '🎉' : '📖';
+  document.getElementById('r-heading').textContent = passed ? 'Congratulations!' : 'Not quite there yet';
+  document.getElementById('r-score').textContent = pct+'%';
+  document.getElementById('r-label').textContent = score+' out of 60 correct. Pass mark is 75%. Time taken: '+timeStr;
+
+  let msg = passed
+    ? '<strong>You have passed the huunuu Licensed Facilitator Assessment.</strong><br><br>Your Certificate of Accreditation is ready to download below.'
+    : 'You scored '+pct+'% against a pass mark of 75%. We recommend revisiting the Big Conversation Framework facilitator guide before trying again.';
+
   if(wrong.length){
-    msg+='<div class="wrong-list"><p style="font-weight:700;margin-bottom:10px;margin-top:16px">Questions to review ('+wrong.length+'):</p>';
+    msg += '<div class="wrong-list"><p style="font-weight:700;margin-bottom:10px;margin-top:16px">Questions to review ('+wrong.length+'):</p>';
     wrong.forEach(w=>{
-      msg+=`<div class="wrong-item"><div class="wi-meta">Q${w.num} &middot; ${w.mod} &middot; ${w.tag}</div><div class="wi-q">${w.q}</div><div class="wi-wrong"><strong>Your answer:</strong> ${w.yours}</div><div class="wi-correct"><strong>Correct answer:</strong> ${w.correct}</div></div>`;
+      msg += `<div class="wrong-item"><div class="wi-meta">Q${w.num} &middot; ${w.mod} &middot; ${w.tag}</div><div class="wi-q">${w.q}</div><div class="wi-wrong"><strong>Your answer:</strong> ${w.yours}</div><div class="wi-correct"><strong>Correct answer:</strong> ${w.correct}</div></div>`;
     });
-    msg+='</div>';
+    msg += '</div>';
   }
-  document.getElementById('r-msg').innerHTML=msg;
-  const acts=document.getElementById('r-actions');
-  acts.innerHTML='';
+  document.getElementById('r-msg').innerHTML = msg;
+
+  const acts = document.getElementById('r-actions');
+  acts.innerHTML = '';
+
   if(passed){
-    const b=document.createElement('button');
-    b.className='btn btn-pink';b.textContent='View My Certificate';
-    b.onclick=()=>{
-      document.getElementById('cert-name').textContent=currentName;
-      document.getElementById('cert-date').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+    const b = document.createElement('button');
+    b.className = 'btn btn-pink';
+    b.textContent = 'View My Certificate';
+    b.onclick = ()=>{
+      document.getElementById('cert-name').textContent = currentName;
+      document.getElementById('cert-date').textContent = today();
       show('certificate');
     };
     acts.appendChild(b);
   }
-  try{
-    const user=await getRecord(currentEmail);
-    const attempts=user?user.attempts:1;
-    const left=MAX_ATTEMPTS-attempts;
-    document.getElementById('r-attempts').textContent=passed?'':(left>0?`You have ${left} attempt${left===1?'':'s'} remaining.`:'You have used all 3 attempts. Please contact facilitators@huunuu.com to request a reset.');
-    if(!passed&&left>0){
-      const b=document.createElement('button');
-      b.className='btn btn-pink';b.textContent='Retake Assessment';
-      b.onclick=()=>{buildAssessment();show('assessment')};
-      acts.appendChild(b);
-    }
-  }catch(e){}
+
+  const left = MAX_ATTEMPTS - attempts;
+  document.getElementById('r-attempts').textContent = passed ? '' : (left>0 ? `You have ${left} attempt${left===1?'':'s'} remaining.` : 'You have used all 3 attempts. Please contact facilitators@huunuu.com to request a reset.');
+
+  if(!passed && left>0){
+    const b = document.createElement('button');
+    b.className = 'btn btn-outline';
+    b.textContent = 'Retake Assessment';
+    b.onclick = ()=>{ buildAssessment(); show('assessment'); };
+    acts.appendChild(b);
+  }
+
   show('results');
-}
-
-// Admin
-async function renderAdmin(){
-  const users=await getAllRecords();
-  const tbody=document.getElementById('admin-tbody');
-  tbody.innerHTML='';
-  const keys=Object.keys(users);
-  if(!keys.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#aa96a1;padding:20px">No users yet.</td></tr>';return}
-  keys.forEach(email=>{
-    const u=users[email];
-    const status=u.passed?'Passed':u.attempts>=MAX_ATTEMPTS?'Locked':u.attempts>0?'In Progress':'Approved';
-    const cls=u.passed?'s-passed':u.attempts>=MAX_ATTEMPTS?'s-locked':u.attempts>0?'s-pending':'s-approved';
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${email}</td><td>${u.name||'—'}</td><td><span class="status ${cls}">${status}</span></td><td>${u.attempts||0}/${MAX_ATTEMPTS}</td><td>${u.lastPct!==undefined?u.lastPct+'%':'—'}</td><td>${u.lastTime||'—'}</td><td>${u.wrongCount!==undefined?u.wrongCount+'/60':'—'}</td>
-    <td style="display:flex;gap:6px"><button class="btn btn-outline btn-sm" onclick="adminResetOne('${email}')">Reset</button><button class="btn btn-sm" style="background:#fde8ef;color:#c62828;border:1px solid #f5b8cc" onclick="adminRemove('${email}')">Remove</button></td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-async function adminAdd(){
-  const email=document.getElementById('add-email').value.trim().toLowerCase();
-  const msg=document.getElementById('add-msg');
-  if(!email||!email.includes('@')){msg.textContent='Please enter a valid email.';return}
-  showLoading('Adding user...');
-  const result=await adminAddEmail(email);
-  hideLoading();
-  document.getElementById('add-email').value='';
-  if(result.error==='Already exists'){msg.textContent='This email is already registered.';}
-  else if(result.ok){msg.textContent='Added: '+email;await renderAdmin();}
-  else msg.textContent='Error adding email.';
-  setTimeout(()=>msg.textContent='',3000);
-}
-
-async function adminReset(){
-  const email=document.getElementById('reset-email').value.trim().toLowerCase();
-  const msg=document.getElementById('reset-msg');
-  await adminResetOne(email,msg);
-  document.getElementById('reset-email').value='';
-}
-
-async function adminResetOne(email,msgEl){
-  const existing=await getRecord(email);
-  if(!existing){if(msgEl)msgEl.textContent='Email not found.';else toast('Email not found.');return}
-  showLoading('Resetting...');
-  await saveRecord(email,{attempts:0,name:existing.name||''});
-  hideLoading();
-  if(msgEl){msgEl.textContent='Reset: '+email;setTimeout(()=>msgEl.textContent='',3000)}
-  else toast('Reset: '+email);
-  await renderAdmin();
-}
-
-async function adminRemove(email){
-  if(!confirm('Remove '+email+'?'))return;
-  showLoading('Removing...');
-  await adminDeleteEmail(email);
-  hideLoading();
-  await renderAdmin();
-}
-
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
 }
 
 show('welcome');
